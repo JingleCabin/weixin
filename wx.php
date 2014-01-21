@@ -1,5 +1,5 @@
 <?php
-header("Content-type: text/html; charset=utf-8");
+//header("Content-type: text/html; charset=utf-8");
 
 //include_once("wx_menu.php");//自定义菜单,订阅号用不了，只有服务号才能用
 
@@ -127,13 +127,13 @@ class wechatMainMethod
                             <ArticleCount>2</ArticleCount>
 							<Articles>
                             <item>
-                            <Title><![CDATA[wfanr微帆科技 移动互联网平台开发与服务提供商]]></Title> 
+                            <Title><![CDATA[wfanr 微帆科技 移动互联网平台开发与服务提供商]]></Title> 
                             <Description><![CDATA[wfanr微帆科技是移动互联网平台开发与服务提供商，可提供APP定制开发、商城等移动互联网服务。]]></Description>
                             <PicUrl><![CDATA[http://108.186.161.197/images/logo_320.jpg]]></PicUrl>
                             <Url><![CDATA[http://108.186.161.197]]></Url>
                             </item>
 							<item>
-                            <Title><![CDATA[iWATCH 服装演示商店]]></Title> 
+                            <Title><![CDATA[wfanr 服装演示商店]]></Title> 
                             <Description><![CDATA[wfanr微帆科技是移动互联网平台开发与服务提供商，可提供APP定制开发、商城等移动互联网服务。]]></Description>
                             <PicUrl><![CDATA[http://108.186.161.197/images/logo_320.jpg]]></PicUrl>
                             <Url><![CDATA[http://108.186.161.197]]></Url>
