@@ -1,147 +1,117 @@
 <?php
-//header("Content-type: text/html; charset=utf-8");
-
-//include_once("wx_menu.php");//自定义菜单,订阅号用不了，只有服务号才能用
-
 /**
   * wechat php test
   */
 
-$wechatObj = new wechatMainMethod();
+//define your token
+define("TOKEN", "weifan");
+$wechatObj = new wechatCallbackapiTest();
+//$wechatObj->valid();
 $wechatObj->responseMsg();
 
-class wechatMainMethod
+class wechatCallbackapiTest
 {
+	public function valid()
+    {
+        $echoStr = $_GET["echostr"];
+
+        //valid signature , option
+        if($this->checkSignature()){
+        	echo $echoStr;
+        	exit;
+        }
+    }
+
     public function responseMsg()
     {
-		$postStr = $GLOBALS["HTTP_RAW_POST_DATA"];//获取数据
+		//get post data, May be due to the different environments
+		$postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
 
-      	//解析数据
+      	//extract post data
 		if (!empty($postStr)){
-                
               	$postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-                $fromUsername = $postObj->FromUserName;//发送消息方ID
-                $toUsername = $postObj->ToUserName;//接收消息方ID
-				$form_MsgType = $postObj->MsgType;//消息类型
-				$form_Content = $postObj->Content;//消息内容
-                $keyword = trim($postObj->Content);//关键字
-				$form_Event = $postObj->Event;//获取事件类型
-				$form_Key=$postObj->EventKey;//获取菜单Key值
-                $time = time();//时间
-				$form_CreateTime = $postObj->CreateTime;//发送时间
-                //$textTpl = $this->getconn(1);
-				if($form_MsgType=="text")//文本类消息处理
+				$msgType = trim($postObj->MsgType);
+				switch($msgType) 
 				{
-					if(!empty( $keyword ))//关键字
-					{
-						if($keyword=="tel"){
-							$textTpl = $this->getconn(2);
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-						}else{
-							$textTpl = $this->getconn();
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-						}
-					}
+					case "text":
+						$resultStr = $this->handleText($postObj);
+						break;
+					case "event":
+						$resultStr = $this->handleEvent($postObj);
+						break;
+					default:
+						$reusltStr = "Unknow msg type:".$msgType;
+						break;
 				}
-				if($form_MsgType=="event")//事件类消息处理（包含菜单）
-				{
-					if($form_Event=="CLICK")
-					{
-						if($form_Key=="about")
-						{
-						  $textTpl = $this->getconn(1);
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-						}else if($form_Key=="contact"){
-							$textTpl = $this->getconn(2);
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-						}else{
-							$textTpl = $this->getconn();
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-						}
-					}
-					else if($form_Event=="subscribe")//关注
-					{
-						    $textTpl = $this->getconn();
-						    $msgType = "text";
-						    $contentStr = $time;
-						    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-						    echo $resultStr;
-						    exit;
-					}
-				}		
         }else {
         	echo "";
         	exit;
         }
     }
-	function getconn($a){
-		switch ($a){
-           case 1:
-              $textTpl = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[%s]]></MsgType>
-							<Content><![CDATA[wfanr微帆科技是移动互联网平台开发与服务提供商，可提供APP定制开发、商城等移动互联网服务。]]></Content>
-							<FuncFlag>0</FuncFlag>
-							</xml>";
-           break;  
-           case 2:
-              $textTpl = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[%s]]></MsgType>
-							<Content><![CDATA[TEL:4007888888]]></Content>
-							<FuncFlag>0</FuncFlag>
-							</xml>";
-           break;
-           default:
-              $textTpl = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[news]]></MsgType>
-							<Content><![CDATA[%s]]></Content>
-							<FuncFlag>0</FuncFlag>
-                            <ArticleCount>2</ArticleCount>
-							<Articles>
-                            <item>
-                            <Title><![CDATA[wfanr 微帆科技 移动互联网平台开发与服务提供商]]></Title> 
-                            <Description><![CDATA[wfanr微帆科技是移动互联网平台开发与服务提供商，可提供APP定制开发、商城等移动互联网服务。]]></Description>
-                            <PicUrl><![CDATA[http://108.186.161.197/images/logo_320.jpg]]></PicUrl>
-                            <Url><![CDATA[http://108.186.161.197]]></Url>
-                            </item>
-							<item>
-                            <Title><![CDATA[wfanr 服装演示商店]]></Title> 
-                            <Description><![CDATA[wfanr微帆科技是移动互联网平台开发与服务提供商，可提供APP定制开发、商城等移动互联网服务。]]></Description>
-                            <PicUrl><![CDATA[http://108.186.161.197/images/logo_320.jpg]]></PicUrl>
-                            <Url><![CDATA[http://108.186.161.197]]></Url>
-                            </item>
-                            </Articles>
-							</xml>";
-         }
-		 return $textTpl;
+		
+	// 处理文本消息
+	private function handleText($postObj) 
+	{
+		$keyword = trim($postObj->Content);        
+		if(!empty( $keyword ))
+		{
+			$contentStr = "Welcome to wechat world!";
+		}else{
+			$contentStr = "Input something...";
+		}
+        $resultStr = $this->responseText($postObj, $contentStr);
+        return $resultStr;
+	}
+
+	// 处理事件：subscribe、unsubscribe
+	private function handleEvent($object)
+	{
+        $contentStr = "";
+        switch ($object->Event)
+        {
+            case "subscribe":
+                $contentStr = "感谢您关注【微帆科技测试账号】"."\n"."微信号：gh_a6a2f98e3c9c"."\n"."微帆科技，为您提供武汉本地生活指南，相关信息查询，做最好的本地微信生活服务平台。"."\n"."目前平台功能如下："."\n"."【1】 查天气，如输入：天气"."\n"."【2】 查公交，如输入：公交178"."\n"."【3】 翻译，如输入：翻译I love you"."\n"."【4】 信息查询，如输入：户部巷"."\n"."更多内容，敬请期待...";
+                break;
+            default :
+                $contentStr = "Unknow Event: ".$object->Event;
+                break;
+        }
+        $resultStr = $this->responseText($object, $contentStr);
+        return $resultStr;
+	}
+
+    private function responseText($object, $content, $flag=0)
+    {
+        $textTpl = "<xml>
+                    <ToUserName><![CDATA[%s]]></ToUserName>
+                    <FromUserName><![CDATA[%s]]></FromUserName>
+                    <CreateTime>%s</CreateTime>
+                    <MsgType><![CDATA[text]]></MsgType>
+                    <Content><![CDATA[%s]]></Content>
+                    <FuncFlag>%d</FuncFlag>
+                    </xml>";
+        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $content, $flag);
+        return $resultStr;
+    }
+
+	private function checkSignature()
+	{
+        $signature = $_GET["signature"];
+        $timestamp = $_GET["timestamp"];
+        $nonce = $_GET["nonce"];	
+        		
+		$token = TOKEN;
+		$tmpArr = array($token, $timestamp, $nonce);
+		sort($tmpArr);
+		$tmpStr = implode( $tmpArr );
+		$tmpStr = sha1( $tmpStr );
+		
+		if( $tmpStr == $signature ){
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
+
 ?>
